@@ -1,0 +1,54 @@
+model EditoraABC
+
+class Autor
+end
+
+class Livro
+end
+
+class Grafica
+end
+
+class Editor
+end
+
+class ProjetoLivro
+end
+
+class VersaoFinal
+end
+
+association Escreve between
+  Autor[1..*]
+  Livro[1..*]
+end
+
+association Imprime between
+  Livro[1..*]
+  Grafica[1]
+end
+
+association TrabalhaCom between
+  Autor[*]
+  Editor[1]
+end
+
+association Cria between
+  Autor[1..*]
+  ProjetoLivro[1..*]
+end
+
+association Edita between
+  Editor[1..*]
+  ProjetoLivro[1..*]
+end
+
+association Entrega between
+  Editor[*]
+  Grafica[1..*]
+end
+
+association Recebe between
+  VersaoFinal[*]
+  Grafica[1]
+end
