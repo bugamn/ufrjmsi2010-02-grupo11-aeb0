@@ -1,0 +1,139 @@
+--aggregation
+--association
+--composition
+--associationclass
+
+model VoceAluga
+
+--CLasses
+
+class agencia
+attributes
+  localizacao : String
+end
+
+class gerente
+end
+
+class agente_de_locacao
+end
+
+associationclass locacao between
+  cliente[1]
+  carro[1..*]
+attributes
+  data_locacao : String
+  data_devolucao : String
+  observacoes : String
+end
+
+associationclass reserva between
+  cliente[1] role requerente
+  agencia[1] role reservador
+attributes
+  data_reserva : String
+  grupo_carro : String
+end
+
+class grupo_carro
+attributes
+  categoria : String
+end
+
+class modelo
+attributes
+  marca : String
+  especificacoes : String
+end
+
+class carro
+attributes
+  placa : String
+  ano : String
+end
+
+class cliente
+attributes
+  nome : String
+  cpf : String
+  endereco : String
+end
+
+associationclass devolucao between
+  cliente[1..*] role devolutor
+  agencia[1] role receptor
+attributes
+  data : String
+end
+
+class estacao_de_servico
+end
+
+associationclass manutencao between
+  carro[1]
+  estacao_de_servico[1]
+attributes
+  data : String
+end
+
+class registro
+attributes
+  problemas_pagamento : String
+  acidentes : String
+  danos : String
+end
+
+class pagamento
+attributes
+  forma : String
+  valor : String
+  recebido : Boolean
+  vencimento : String
+end
+
+--Relacoes
+
+composition grupo_modelo between
+  grupo_carro[1]
+  modelo[1..*]
+end
+
+composition modelo_carro between
+  modelo[1]
+  carro[1..*]
+end
+
+association gerencia between
+  gerente[1]
+  agencia[1]
+end
+
+association trabalha between
+  agencia[1]
+  agente_de_locacao[1..*]
+end
+
+association possui between
+  agencia[1]
+  carro[0..*]
+end
+
+association contem between
+  registro[1]
+  cliente[1]
+end
+
+association faz between
+  cliente[1]
+  pagamento[0..*]
+end
+
+association recebe between
+  agencia[1]
+  pagamento[0..*]
+end
+
+association devolvido between
+  carro[1..*]
+  devolucao[1]
+end
