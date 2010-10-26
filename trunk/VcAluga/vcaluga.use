@@ -20,7 +20,7 @@ end
 
 associationclass locacao between
   cliente[1]
-  carro[1..*]
+  carro[1]
 attributes
   data_locacao : String
   data_devolucao : String
@@ -40,6 +40,7 @@ attributes
   categoria : String
 end
 
+
 class modelo
 attributes
   marca : String
@@ -57,6 +58,35 @@ attributes
   nome : String
   cpf : String
   endereco : String
+constraints
+  inv: self.carteira.validade > self.locacao.data_devolucao
+  inv: self.seguro.especificacoes = self.pais.regras_seguro
+end
+
+class apolice_seguro
+attributes
+	especificacoes : String
+end
+
+class carteira_habilitacao
+attributes
+	validade : String
+end
+
+class imposto
+attributes
+  valor : Real
+end
+
+class pais
+attributes
+  nome : String
+  regras_seguro : String
+end
+
+association tem between
+	cliente[1] role motorista
+	carteira_habilitacao[1] role carteira
 end
 
 associationclass devolucao between
@@ -66,7 +96,27 @@ attributes
   data : String
 end
 
+association seguro between
+	cliente[1] role segurado
+	apolice_seguro[0..*] role seguro
+end
+
 class estacao_de_servico
+end
+
+association localiza between
+  agencia[1]
+  pais[1]
+end
+
+association recolhe between
+  imposto[1]
+  devolucao[1]
+end
+
+association visita between
+  cliente[0..*]
+  pais[1..*]
 end
 
 associationclass manutencao between
@@ -134,6 +184,6 @@ association recebe between
 end
 
 association devolvido between
-  carro[1..*]
+  carro[1]
   devolucao[1]
 end
