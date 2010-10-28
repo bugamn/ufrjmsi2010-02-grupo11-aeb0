@@ -18,28 +18,10 @@ end
 class agente_de_locacao
 end
 
-associationclass locacao between
-  cliente[1]
-  carro[1]
-attributes
-  data_locacao : String
-  data_devolucao : String
-  observacoes : String
-end
-
-associationclass reserva between
-  cliente[1] role requerente
-  agencia[1] role reservador
-attributes
-  data_reserva : String
-  grupo_carro : String
-end
-
 class grupo_carro
 attributes
   categoria : String
 end
-
 
 class modelo
 attributes
@@ -49,23 +31,26 @@ end
 
 class carro
 attributes
-  placa : String
-  ano : String
+	placa : String
+	ano : String
+	quilometragem : Real
 end
 
 class cliente
 attributes
-  nome : String
-  cpf : String
-  endereco : String
+	nome : String
+	cpf : String
+	endereco : String
 constraints
-  inv: self.carteira.validade > self.locacao.data_devolucao
-  inv: self.seguro.especificacoes = self.pais.regras_seguro
+	inv HabilitacaoValida: self.carteira.validade > self.locacao.data_devolucao
+	inv SeguroCompativel: self.pais.regra->includesAll(self.seguro.regra)
+	inv CarroAmbiental: self.pais.regra->includesAll(self.carro.regra)
+end
+
+class regra
 end
 
 class apolice_seguro
-attributes
-	especificacoes : String
 end
 
 class carteira_habilitacao
@@ -75,55 +60,15 @@ end
 
 class imposto
 attributes
-  valor : Real
+	valor : Real
 end
 
 class pais
 attributes
   nome : String
-  regras_seguro : String
-end
-
-association tem between
-	cliente[1] role motorista
-	carteira_habilitacao[1] role carteira
-end
-
-associationclass devolucao between
-  cliente[1..*] role devolutor
-  agencia[1] role receptor
-attributes
-  data : String
-end
-
-association seguro between
-	cliente[1] role segurado
-	apolice_seguro[0..*] role seguro
 end
 
 class estacao_de_servico
-end
-
-association localiza between
-  agencia[1]
-  pais[1]
-end
-
-association recolhe between
-  imposto[1]
-  devolucao[1]
-end
-
-association visita between
-  cliente[0..*]
-  pais[1..*]
-end
-
-associationclass manutencao between
-  carro[1]
-  estacao_de_servico[1]
-attributes
-  data : String
 end
 
 class registro
@@ -136,12 +81,45 @@ end
 class pagamento
 attributes
   forma : String
-  valor : String
+  valor : Real
   recebido : Boolean
   vencimento : String
 end
 
 --Relacoes
+
+associationclass reserva between
+  cliente[1] role requerente
+  agencia[1] role reservador
+attributes
+  data_reserva : String
+  grupo_carro : String
+end
+
+associationclass locacao between
+  cliente[1]
+  carro[1]
+attributes
+  data_locacao : String
+  data_devolucao : String
+  observacoes : String
+end
+
+associationclass manutencao between
+  carro[1]
+  estacao_de_servico[1]
+attributes
+  data : String
+end
+
+associationclass devolucao between
+	cliente[1..*] role devolutor
+	agencia[1] role receptor
+attributes
+	data : String
+constraints
+	inv Pagamentos: self.receptor.pagamento->reject(p | p.valor > 0 and p.imposto.valor > 0)->isEmpty()
+end
 
 composition grupo_modelo between
   grupo_carro[1]
@@ -156,6 +134,21 @@ end
 association gerencia between
   gerente[1]
   agencia[1]
+end
+
+association impoe between
+	pais[1..*]
+	regra[1..*]
+end
+
+association especifica between
+	apolice_seguro[0..*]
+	regra[0..*]
+end
+
+association obedece between
+	carro[0..*]
+	regra[0..*]
 end
 
 association trabalha between
@@ -175,15 +168,45 @@ end
 
 association faz between
   cliente[1]
-  pagamento[0..*]
+  pagamento[0..1]
 end
 
 association recebe between
-  agencia[1]
-  pagamento[0..*]
+	agencia[1]
+	pagamento[0..*]
 end
 
 association devolvido between
   carro[1]
   devolucao[1]
+end
+
+association tem between
+	cliente[1] role motorista
+	carteira_habilitacao[1] role carteira
+end
+
+association seguro between
+	cliente[1] role segurado
+	apolice_seguro[0..*] role seguro
+end
+
+association localiza between
+  agencia[1]
+  pais[1]
+end
+
+association recolhe between
+  imposto[1]
+  pagamento[1]
+end
+
+association visita between
+  cliente[0..*]
+  pais[1..*]
+end
+
+association pede between
+	reserva[1..*]
+	grupo_carro[1]
 end
