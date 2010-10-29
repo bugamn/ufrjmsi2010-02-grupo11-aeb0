@@ -73,9 +73,12 @@ end
 
 class registro
 attributes
-  problemas_pagamento : String
-  acidentes : String
-  danos : String
+	problemas_pagamento : String
+	acidentes : String
+	danos : String
+operations
+	listaNegra() : Boolean = 
+		not(problemas_pagamento.isUndefined() and acidentes.isUndefined() and danos.isUndefined)
 end
 
 class pagamento
@@ -89,11 +92,12 @@ end
 --Relacoes
 
 associationclass reserva between
-  cliente[1] role requerente
-  agencia[1] role reservador
+	cliente[1] role requerente
+	agencia[1] role reservador
 attributes
-  data_reserva : String
-  grupo_carro : String
+	data_reserva : String
+operations
+	criarReserva(c : cliente, a : agencia, m : modelo, data : String) : reserva
 end
 
 associationclass locacao between
@@ -210,3 +214,11 @@ association pede between
 	reserva[1..*]
 	grupo_carro[1]
 end
+
+constraints
+
+context reserva::criarReserva(c : cliente, a : agencia, m : modelo, data : String) : reserva
+	pre capacidade: a.reserva->size() + 1 < a.carro->size()
+	pre clienteLimpo: not(c.registro.listaNegra())
+	post: requerente = c and reservador = a and m = grupo_carro and data_reserva = data
+
