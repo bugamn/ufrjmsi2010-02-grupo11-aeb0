@@ -22,7 +22,10 @@ class grupo_carro
 attributes
 	categoria : String
 operations
+	grupo(nome : String) : grupo_carro = grupo_carro.allInstances()->select(g:grupo_carro | nome = g.categoria)->asSequence()->first()
 	
+constraints
+	inv mesmoNome : grupo_carro.allInstances()->select(g: grupo_carro | g.categoria = categoria and g <> self)->isEmpty() 
 end
 
 class modelo
@@ -98,8 +101,9 @@ associationclass reserva between
 	agencia[1] role reservador
 attributes
 	data_reserva : String
+	data_devolucao : String
 operations
-	criarReserva(c : cliente, a : agencia, g : grupo_carro, data : String) : reserva
+	criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : String, data2 : String) : reserva
 end
 
 associationclass locacao between
@@ -109,6 +113,10 @@ attributes
   data_locacao : String
   data_devolucao : String
   observacoes : String
+
+operations
+
+	imediato(data1 : String , data2 : String, grupo: grupo_carro , a : agencia) : reserva
 end
 
 associationclass manutencao between
@@ -219,8 +227,15 @@ end
 
 constraints
 
-context reserva::criarReserva(c : cliente, a : agencia, g : grupo_carro, data : String) : reserva
-	pre capacidade: a.reserva->size() + 1 <= a.carro->size()
+context reserva::criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : String, data2 : String) : reserva
+	pre capacidade: a.reserva->size() <= a.carro->size()
 	pre clienteLimpo: not(c.registro.listaNegra())
-	post valores: requerente = c and reservador = a and g = grupo_carro and data_reserva = data
+	pre dataSobreposta: reserva.allInstances()->select(r : reserva | (r.data_reserva > data1 and r.data_reserva < data2) or (r.data_devolucao > data1 and r.data_devolucao < data2) and (data1 > r.data_reserva and data1 < r.data_devolucao) or (data2 > r.data_reserva and data2 < r.data_devolucao))->isEmpty()
+	post valores: requerente = c and reservador = a and g = grupo_carro and data_reserva = data1 and data_devolucao = data2
+	post valorPadrao: g.isUndefined() and g = grupo_carro.grupo('A')
 
+context locacao::imediato(data1 : String , data2 : String, grupo: grupo_carro , a : agencia) : reserva
+	pre diaDevolucao: data2 < carro.manutencao.data and data2 < cliente.reserva.data_reserva
+	post menorKm: (a.carro->select(c : carro | c.modelo.grupo_carro = grupo)->size() > 1) and carro = a.carro->select(c | a.carro->select((d | d <> c and d.quilometragem < c.quilometragem))->isEmpty())->asSequence()->first()
+
+	
