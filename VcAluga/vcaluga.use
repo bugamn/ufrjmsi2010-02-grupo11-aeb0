@@ -20,7 +20,9 @@ end
 
 class grupo_carro
 attributes
-  categoria : String
+	categoria : String
+operations
+	
 end
 
 class modelo
@@ -97,7 +99,7 @@ associationclass reserva between
 attributes
 	data_reserva : String
 operations
-	criarReserva(c : cliente, a : agencia, m : modelo, data : String) : reserva
+	criarReserva(c : cliente, a : agencia, g : grupo_carro, data : String) : reserva
 end
 
 associationclass locacao between
@@ -217,8 +219,8 @@ end
 
 constraints
 
-context reserva::criarReserva(c : cliente, a : agencia, m : modelo, data : String) : reserva
-	pre capacidade: a.reserva->size() + 1 < a.carro->size()
+context reserva::criarReserva(c : cliente, a : agencia, g : grupo_carro, data : String) : reserva
+	pre capacidade: a.reserva->size() + 1 <= a.carro->size()
 	pre clienteLimpo: not(c.registro.listaNegra())
-	post: requerente = c and reservador = a and m = grupo_carro and data_reserva = data
+	post valores: requerente = c and reservador = a and g = grupo_carro and data_reserva = data
 
