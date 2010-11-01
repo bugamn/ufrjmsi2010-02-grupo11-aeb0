@@ -236,6 +236,6 @@ context reserva::criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 :
 
 context locacao::imediato(data1 : String , data2 : String, grupo: grupo_carro , a : agencia) : reserva
 	pre diaDevolucao: data2 < carro.manutencao.data and data2 < cliente.reserva.data_reserva
-	post menorKm: (a.carro->select(c : carro | c.modelo.grupo_carro = grupo)->size() > 1) and carro = a.carro->select(c | a.carro->select((d | d <> c and d.quilometragem < c.quilometragem))->isEmpty())->asSequence()->first()
+	post menorKm: carro = a.carro->select(c | a.carro->select(d | d <> c and d.quilometragem < c.quilometragem)->isEmpty())->asSequence()->first()
 
 	
