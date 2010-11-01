@@ -39,6 +39,8 @@ attributes
 	placa : String
 	ano : String
 	quilometragem : Real
+	preparado : Boolean
+	verificado : Boolean
 end
 
 class cliente
@@ -46,6 +48,10 @@ attributes
 	nome : String
 	cpf : String
 	endereco : String
+	idade : Integer
+	cartao : CC
+	condicao : String
+	apto : Boolean
 constraints
 	inv HabilitacaoValida: self.carteira.validade > self.locacao.data_devolucao
 	inv SeguroCompativel: self.pais.regra->includesAll(self.seguro.regra)
@@ -60,7 +66,8 @@ end
 
 class carteira_habilitacao
 attributes
-	validade : String
+	data_emissao : Integer
+	validade : Integer
 end
 
 class imposto
@@ -100,30 +107,67 @@ associationclass reserva between
 	cliente[1] role requerente
 	agencia[1] role reservador
 attributes
-	data_reserva : String
-	data_devolucao : String
+	data_reserva : Integer
+	data_devolucao : Integer
 operations
-	criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : String, data2 : String) : reserva
+	criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : Integer, data2 : Integer) : reserva
 end
+
+
 
 associationclass locacao between
-  cliente[1]
+  cliente[1] role motorista
   carro[1]
 attributes
-  data_locacao : String
-  data_devolucao : String
-  observacoes : String
+	valor : Integer
+	contrato_locacao : contrato
+	formulario_locacao : formulario
+	data_locacao : Integer
+	data_devolucao : Integer
+	observacoes : String
 
 operations
 
-	imediato(data1 : String , data2 : String, grupo: grupo_carro , a : agencia) : reserva
+	imediato(data1 : Integer , data2 : Integer, grupo: grupo_carro , a : agencia) : reserva
+	entregaCarro(c : cliente , s : Set(cliente) , data1 : Integer , data2 : Integer) : locacao
+constraints
+
+	inv	idadeMotorista : motorista.idade > 25 and motorista.carteira.data_emissao - self.data_locacao > 365
+
 end
+
+association garante between
+	locacao[1]
+	CC[1] role cartao
+end
+
+class contrato
+attributes
+	assinante : String
+end
+
+class formulario
+attributes
+	assinante : String
+end
+
+class CC
+attributes
+	possuidor : String
+	disponibilidade: Integer
+	numero : Integer
+	validade : Integer
+	emissao : Integer
+operations
+	fazerReserva(valor : Integer)
+end
+
 
 associationclass manutencao between
   carro[1]
   estacao_de_servico[1]
 attributes
-  data : String
+  data : Integer
 end
 
 associationclass devolucao between
@@ -227,15 +271,23 @@ end
 
 constraints
 
-context reserva::criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : String, data2 : String) : reserva
+context reserva::criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : Integer, data2 : Integer) : reserva
 	pre capacidade: a.reserva->size() <= a.carro->size()
 	pre clienteLimpo: not(c.registro.listaNegra())
 	pre dataSobreposta: reserva.allInstances()->select(r : reserva | (r.data_reserva > data1 and r.data_reserva < data2) or (r.data_devolucao > data1 and r.data_devolucao < data2) and (data1 > r.data_reserva and data1 < r.data_devolucao) or (data2 > r.data_reserva and data2 < r.data_devolucao))->isEmpty()
 	post valores: requerente = c and reservador = a and g = grupo_carro and data_reserva = data1 and data_devolucao = data2
 	post valorPadrao: g.isUndefined() and g = grupo_carro.grupo('A')
 
-context locacao::imediato(data1 : String , data2 : String, grupo: grupo_carro , a : agencia) : reserva
-	pre diaDevolucao: data2 < carro.manutencao.data and data2 < cliente.reserva.data_reserva
-	post menorKm: carro = a.carro->select(c | a.carro->select(d | d <> c and d.quilometragem < c.quilometragem)->isEmpty())->asSequence()->first()
 
-	
+context locacao::imediato(data1 : Integer , data2 : Integer, grupo: grupo_carro , a : agencia) : reserva
+	pre diaDevolucao: data2 < carro.manutencao.data and data2 < motorista.reserva.data_reserva
+	post menorKm: carro = a.carro->select(c | a.carro->select(d | d <> c and d.quilometragem < c.quilometragem)->isEmpty())->asSequence()->first()
+context locacao::entregaCarro(c : cliente , s : Set(cliente) , data1 : Integer , data2 : Integer) : locacao
+	pre possuidorCC: cartao.possuidor = c.nome and contrato_locacao.assinante = c.nome
+	pre outrosAutorizados: formulario_locacao.assinante = s->collect(nome)->asSequence()->first()
+	pre outraLocacao: locacao.allInstances()->select(l : locacao | (l.data_locacao > data1 and l.data_locacao < data2) or (l.data_devolucao > data1 and l.data_devolucao < data2) and (data1 > l.data_locacao and data1 < l.data_devolucao) or (data2 > l.data_locacao and data2 < l.data_devolucao))->isEmpty()
+	pre reservaCredito: cartao.disponibilidade > valor and cartao.disponibilidade = cartao.disponibilidade - valor
+	pre condicaoCliente: c.condicao <> 'Alcoolizado' and c.condicao <> 'Drogado'
+	pre clienteApto: c.apto = true
+	pre carroPreparado: carro.preparado = true
+	pre carroVerificado: carro.verificado = true
