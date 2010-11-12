@@ -5,7 +5,7 @@
 
 model VoceAluga
 
---CLasses
+--Classes
 
 class agencia
 attributes
@@ -51,6 +51,11 @@ attributes
 	quilometragem : Real
 	preparado : Boolean
 	verificado : Boolean
+	condicao : String
+	quilometragemRevisado : Real
+	dataRevisado : dataHora
+constraints
+	inv manutencao: quilometragem - quilometragemRevisado < 10000 or self.manutencao.data.agora.toDay() - self.manutencao.data.toDay() < 3*30
 end
 
 class cliente
@@ -105,6 +110,7 @@ end
 
 class pagamento
 attributes
+
   forma : String
   valor : Real
   recebido : Boolean
@@ -166,7 +172,13 @@ operations
 constraints
 
 	inv idadeMotorista: motorista.idade > 25 and motorista.carteira.emissao.toDay() - self.dataHora_locacao.toDay() > 365
+	inv carroBom: self.carro.condicao = 'normal'
 
+end
+
+association devolveEm between
+	locacao[0..*]
+	agencia[1]
 end
 
 association garante between
@@ -190,12 +202,13 @@ end
 class CC
 attributes
 	possuidor : String
-	disponibilidade: Integer
+	disponibilidade: Real
 	numero : Integer
-	validade : Integer
-	emissao : Integer
+	validade : dataHora
+	emissao : dataHora
 operations
-	fazerReserva(valor : Integer)
+	fazerReserva(valor : Real)
+	notificar(valorCobranca : Real) : Boolean = valorCobranca <= disponibilidade
 end
 
 
@@ -210,7 +223,28 @@ associationclass devolucao between
 	cliente[1..*] role devolutor
 	agencia[1] role receptor
 attributes
-	data : String
+	data : dataHora
+operations
+	taxaRetorno(valor : Real)
+		pre: self.receptor <> self.locacao.agencia 
+		post: self.locacao.pagamento.valor = self.locacao.pagamento.valor@pre + valor
+	desgaste() : Boolean = self.locacao.carro.condicao <> 'normal'
+	responsabilidade(valor : Real) : Boolean = self.locacao.reserva.cartao.notificar(valor)
+		pre: self.desgaste()
+	antecipada(novoValor : Real)
+		pre: self.locacao.dataHora_devolucao.toDay() > self.data.toDay()
+		post: self.locacao.pagamento.valor = novoValor
+	atrasoPequeno(valorHora : Real, valorDia : Real)
+		pre: self.data.agora.toHour() > self.locacao.dataHora_devolucao.toHour()
+		post: if self.data.agora.toHour() - self.locacao.dataHora_devolucao.toHour() < 6
+			then self.locacao.pagamento.valor = self.locacao.pagamento.valor@pre + valorHora * (self.data.agora.toHour() - self.locacao.dataHora_devolucao.toHour())
+			else self.locacao.pagamento.valor = self.locacao.pagamento.valor@pre + valorDia
+			endif
+	extender(novoPrazo : dataHora)
+		pre: self.carro.manutencao.data.toDay() > novoPrazo.toDay()
+		post: self.locacao.dataHora_devolucao = novoPrazo
+	contactarCliente() : Boolean = self.data.agora.toDay() - self.locacao.dataHora_devolucao.toDay() >= 1
+	atrasoGrande() : Boolean = (self.data.agora.toDay() - self.locacao.dataHora_devolucao.toDay()) >= 3
 constraints
 	inv Pagamentos: self.receptor.pagamento->reject(p | p.valor > 0 and p.imposto.valor > 0)->isEmpty()
 end
@@ -248,6 +282,11 @@ end
 association especifica between
 	apolice_seguro[0..*]
 	regra[0..*]
+end
+
+association cobra between
+	locacao[1]
+	pagamento[1]
 end
 
 association segura between
