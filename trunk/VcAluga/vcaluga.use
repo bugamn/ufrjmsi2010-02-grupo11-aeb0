@@ -55,7 +55,8 @@ attributes
 	quilometragemRevisado : Real
 	dataRevisado : dataHora
 constraints
-	inv manutencao: quilometragem - quilometragemRevisado < 10000 or self.manutencao.data.agora.toDay() - self.manutencao.data.toDay() < 3*30
+	inv manutencao: quilometragem - quilometragemRevisado < 10000 or self.manutencao.data.agora.toDay() - self.manutencao.data.toDay() < 3*30 or (quilometragem - quilometragemRevisado < 10000*1.1 or self.manutencao.data.agora.toDay() - self.manutencao.data.toDay() < 3*30*1.1 and reserva.allInstances->select(r | r.dataHora_reserva = r.dataHora_reserva.agora)->size() > carro.allInstances->select(c | c.quilometragem - c.quilometragemRevisado < 10000 or c.manutencao.data.agora.toDay() - c.manutencao.data.toDay() < 3*30 and c.condicao = 'normal' and c.locacao.isUndefined())->size())
+
 end
 
 class cliente
