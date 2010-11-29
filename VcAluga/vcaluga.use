@@ -71,7 +71,7 @@ attributes
 constraints
 	inv HabilitacaoValida: self.carteira.validade.toMinute() > self.locacao.dataHora_devolucao.toMinute()
 	inv SeguroCompativel: self.pais.regra->includesAll(self.seguro.regra)
-	inv CarroAmbiental: self.pais.regra->includesAll(self.carro.regra)
+	inv CarroAmbiental: self.pais->collect(regra)->includesAll(self.carro.regra)
 end
 
 class regra
