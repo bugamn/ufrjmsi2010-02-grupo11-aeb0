@@ -409,6 +409,91 @@
 ? reservaZe_gi.cartao->isEmpty()
 
 
+
+--Para o caso de ser novo cliente
+
+--data da emissao do CC
+!create emissaoCC_nc:dataHora
+!set emissaoCC_nc.value := (16 * 60) + (7 * 30 * 24 * 60) + (2007 * 365 * 24 * 60)
+!set emissaoCC_nc.agora := agora
+
+--validade do CC
+!create validCC_nc:dataHora
+!set validCC_nc.value := (14 * 60) + (7 * 30 * 24 * 60) + (2011 * 365 * 24 * 60)
+!set validCC_nc.agora := agora
+
+--data da emissao da carteira
+!create emissaoCarteira_nc:dataHora
+!set emissaoCarteira_nc.value := (16 * 60) + (7 * 30 * 24 * 60) + (2007 * 365 * 24 * 60)
+!set emissaoCarteira_nc.agora := agora
+
+--validade da carteira
+!create validCarteira_nc:dataHora
+!set validCarteira_nc.value := (14 * 60) + (7 * 30 * 24 * 60) + (2011 * 365 * 24 * 60)
+!set validCarteira_nc.agora := agora
+
+!create carteira_nc:carteira_habilitacao
+!set carteira_nc.emissao := emissaoCarteira_nc
+!set carteira_nc.validade := validCarteira_nc
+
+--o CC do Ze Sa
+!create cartao_nc:CC
+!set cartao_nc.possuidor := 'ze_sa'
+!set cartao_nc.disponibilidade := 10000.00
+!set cartao_nc.numero := '123456781234'
+!set cartao_nc.validade := validCC_nc
+!set cartao_nc.emissao := emissaoCC_nc
+
+
+!create ze_sa_nc : cliente
+!set ze_sa_nc.nome := 'Ze Sa'
+!set ze_sa_nc.cpf := '22222222222'
+!set ze_sa_nc.endereco := 'Rua dos Bobos, n. 0'
+!set ze_sa_nc.idade := 42
+!set ze_sa_nc.cartao := cartao_nc
+!set ze_sa_nc.condicao := 'normal'
+!set ze_sa_nc.apto := true
+
+
+
+
+--a acao propriamente dita
+? not(ze_sa_nc.registro->notEmpty())
+-- O Famoso Ze Sa!
+
+!insert (ze_sa_nc, br) into visita
+--opcao de grupo
+!create op_nc :opcao
+!set op_nc.grupo := a
+
+
+-- O registro do Ze Sa
+!create registro_nc :registro
+!insert (registro_nc, ze_sa_nc) into contem
+
+!insert (ze_sa_nc, carteira_nc) into tem
+
+--Reserva de Ze Sa
+!create dReservaZe_nc : dataHora
+!set	dReservaZe_nc.value := (20 * 60) + (3 * 30 * 24 * 60) + (2010 * 365 * 24 * 60)
+!set	dReservaZe_nc.agora := agora
+
+!create dDevZe_nc : dataHora
+!set	dDevZe_nc.value := (23 * 60) + (3 * 30 * 24 * 60) + (2010 * 365 * 24 * 60)
+!set	dDevZe_nc.agora := agora
+
+? not(ze_sa_nc.registro.listaNegra())
+? not(op_nc.grupo.isUndefined())
+? jujuba.reserva->size() < jujuba.carro->size()
+? ze_sa_nc.reserva->select(r : reserva | (r.dataHora_reserva.toDay() > dReservaZe_p.toDay() and r.dataHora_reserva.toDay() < dDevZe_p.toDay()) or (r.dataHora_devolucao.toDay() > dReservaZe_p.toDay() and r.dataHora_devolucao.toDay() < dDevZe_p.toDay()) and (dReservaZe_p.toDay() > r.dataHora_reserva.toDay() and dReservaZe_p.toDay() < r.dataHora_devolucao.toDay()) or (dDevZe_p.toDay() > r.dataHora_reserva.toDay() and dDevZe_p.toDay() < r.dataHora_devolucao.toDay()))->isEmpty()
+!create reservaZe_nc : reserva between (ze_sa_nc, jujuba)
+--!insert (ze_sa_nc, jujuba) into reservaZe : reserva
+!set	reservaZe_nc.dataHora_reserva := dReservaZe_nc
+!set	reservaZe_nc.dataHora_devolucao := dDevZe_nc
+
+
+
+
 --Cenário com sobreposição de períodos
 --data da emissao do CC
 !create emissaoCC_sp:dataHora
