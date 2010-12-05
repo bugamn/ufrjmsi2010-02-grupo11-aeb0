@@ -142,9 +142,9 @@ operations
 	post valorPadrao: g.isUndefined() and g = grupo_carro.grupo('A')
 
 constraints
-	inv atrasoNaoGarantido: cartao.isUndefined() implies (dataHora_reserva.agora.toMinute() - dataHora_reserva.toMinute()) < 90
+	inv atrasoNaoGarantido: cartao.isUndefined() implies (dataHora_reserva.agora.toMinute() - dataHora_reserva.toMinute()) < 90 or (dataHora_reserva.toDay() <= dataHora_reserva.agora.toDay())
 
-	inv atrasoGarantido: not(cartao.isUndefined()) and (dataHora_reserva.agora.toDay() <= dataHora_reserva.toDay())
+	inv atrasoGarantido: not(cartao.isUndefined()) and (dataHora_reserva.agora.toDay() <= dataHora_reserva.toDay()) or (dataHora_reserva.toDay() <= dataHora_reserva.agora.toDay())
 end
 
 
