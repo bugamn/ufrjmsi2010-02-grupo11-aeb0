@@ -34,15 +34,13 @@
 !set car4.ano := '1984'
 !insert (t1, car4) into modelo_carro
 
-!create car5 :carro
-!set car5.placa := 'AAA0004'
-!set car5.ano := '1984'
-!insert (t1, car5) into modelo_carro
-
 --Agencia
 !create jujuba :agencia
 !set	jujuba.localizacao := 'Jujubalandia'
 !insert (jujuba, car1) into possui
+!insert (jujuba, car2) into possui
+!insert (jujuba, car3) into possui
+!insert (jujuba, car4) into possui
 
 --Pais
 !create br :pais
@@ -121,10 +119,13 @@
 ? not(ze_sa_p.registro.listaNegra())
 ? not(op_p.grupo.isUndefined())
 ? jujuba.reserva->size() < jujuba.carro->size()
+? ze_sa_p.reserva->select(r : reserva | (r.dataHora_reserva.toDay() > dReservaZe_p.toDay() and r.dataHora_reserva.toDay() < dDevZe_p.toDay()) or (r.dataHora_devolucao.toDay() > dReservaZe_p.toDay() and r.dataHora_devolucao.toDay() < dDevZe_p.toDay()) and (dReservaZe_p.toDay() > r.dataHora_reserva.toDay() and dReservaZe_p.toDay() < r.dataHora_devolucao.toDay()) or (dDevZe_p.toDay() > r.dataHora_reserva.toDay() and dDevZe_p.toDay() < r.dataHora_devolucao.toDay()))->isEmpty()
 --a criacao da reserva
 !create reservaZe_p : reserva between (ze_sa_p, jujuba)
 !set	reservaZe_p.dataHora_reserva := dReservaZe_p
 !set	reservaZe_p.dataHora_devolucao := dDevZe_p
+--garantido?
+? reservaZe_p.cartao->isEmpty()
 
 
 --Cenário extendido por garantia de CC
@@ -195,6 +196,8 @@
 ? ze_sa_c.registro->notEmpty()
 ? not(ze_sa_c.registro.listaNegra())
 ? not(op_c.grupo.isUndefined())
+? jujuba.reserva->size() < jujuba.carro->size()
+? ze_sa_c.reserva->select(r : reserva | (r.dataHora_reserva.toDay() > dReservaZe_p.toDay() and r.dataHora_reserva.toDay() < dDevZe_p.toDay()) or (r.dataHora_devolucao.toDay() > dReservaZe_p.toDay() and r.dataHora_devolucao.toDay() < dDevZe_p.toDay()) and (dReservaZe_p.toDay() > r.dataHora_reserva.toDay() and dReservaZe_p.toDay() < r.dataHora_devolucao.toDay()) or (dDevZe_p.toDay() > r.dataHora_reserva.toDay() and dDevZe_p.toDay() < r.dataHora_devolucao.toDay()))->isEmpty()
 !create reservaZe_c : reserva between (ze_sa_c, jujuba)
 --!insert (ze_sa_c, jujuba) into reservaZe : reserva
 !set	reservaZe_c.dataHora_reserva := dReservaZe_c
@@ -202,3 +205,5 @@
 
 -- garantia do cartao para a reserva
 !insert (reservaZe_c, cartao_c) into garante
+--garantido?
+? reservaZe_c.cartao->notEmpty()
