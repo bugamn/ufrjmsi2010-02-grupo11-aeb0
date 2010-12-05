@@ -39,16 +39,6 @@
 !set car5.ano := '1984'
 !insert (t1, car5) into modelo_carro
 
-!create car6 :carro
-!set car6.placa := 'AAA0005'
-!set car6.ano := '1984'
-!insert (t1, car6) into modelo_carro
-
-!create car7 :carro
-!set car7.placa := 'AAA0006'
-!set car7.ano := '1984'
-!insert (t1, car7) into modelo_carro
-
 --Agencia
 !create jujuba :agencia
 !set	jujuba.localizacao := 'Jujubalandia'
