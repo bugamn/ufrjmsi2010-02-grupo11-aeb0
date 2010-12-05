@@ -207,3 +207,72 @@
 !insert (reservaZe_c, cartao_c) into garante
 --garantido?
 ? reservaZe_c.cartao->notEmpty()
+
+--Para o caso de ser da lista negra
+
+--data da emissao do CC
+!create emissaoCC_ln:dataHora
+!set emissaoCC_ln.value := (16 * 60) + (7 * 30 * 24 * 60) + (2007 * 365 * 24 * 60)
+!set emissaoCC_ln.agora := agora
+
+--validade do CC
+!create validCC_ln:dataHora
+!set validCC_ln.value := (14 * 60) + (7 * 30 * 24 * 60) + (2011 * 365 * 24 * 60)
+!set validCC_ln.agora := agora
+
+--data da emissao da carteira
+!create emissaoCarteira_ln:dataHora
+!set emissaoCarteira_ln.value := (16 * 60) + (7 * 30 * 24 * 60) + (2007 * 365 * 24 * 60)
+!set emissaoCarteira_ln.agora := agora
+
+--validade da carteira
+!create validCarteira_ln:dataHora
+!set validCarteira_ln.value := (14 * 60) + (7 * 30 * 24 * 60) + (2011 * 365 * 24 * 60)
+!set validCarteira_ln.agora := agora
+
+!create carteira_ln:carteira_habilitacao
+!set carteira_ln.emissao := emissaoCarteira_ln
+!set carteira_ln.validade := validCarteira_ln
+
+--o CC do Ze Sa
+!create cartao_ln:CC
+!set cartao_ln.possuidor := 'ze_sa'
+!set cartao_ln.disponibilidade := 10000.00
+!set cartao_ln.numero := '123456781234'
+!set cartao_ln.validade := validCC_ln
+!set cartao_ln.emissao := emissaoCC_ln
+
+-- O Famoso Ze Sa!
+!create ze_sa_ln : cliente
+!set ze_sa_ln.nome := 'Ze Sa'
+!set ze_sa_ln.cpf := '22222222222'
+!set ze_sa_ln.endereco := 'Rua dos Bobos, n. 0'
+!set ze_sa_ln.idade := 42
+!set ze_sa_ln.cartao := cartao_ln
+!set ze_sa_ln.condicao := 'normal'
+!set ze_sa_ln.apto := true
+--opcao de grupo
+!create op_ln :opcao
+!set op_ln.grupo := a
+
+-- O registro do Ze Sa
+!create registro_ln :registro
+!set registro_ln.problemas_pagamento := 'caloteiro'
+!insert (registro_ln, ze_sa_ln) into contem
+
+!insert (ze_sa_ln, carteira_ln) into tem
+
+--Reserva de Ze Sa
+!create dReservaZe_ln : dataHora
+!set	dReservaZe_ln.value := (20 * 60) + (3 * 30 * 24 * 60) + (2010 * 365 * 24 * 60)
+!set	dReservaZe_ln.agora := agora
+
+!create dDevZe_ln : dataHora
+!set	dDevZe_ln.value := (23 * 60) + (3 * 30 * 24 * 60) + (2010 * 365 * 24 * 60)
+!set	dDevZe_ln.agora := agora
+
+!insert (ze_sa_ln, br) into visita
+
+--a acao propriamente dita
+? ze_sa_ln.registro->notEmpty()
+? ze_sa_ln.registro.listaNegra()
