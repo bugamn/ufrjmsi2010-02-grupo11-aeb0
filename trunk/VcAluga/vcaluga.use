@@ -128,8 +128,8 @@ end
 --Relacoes
 
 associationclass reserva between
-	cliente[1] role requerente
-	agencia[1] role reservador
+	cliente[1..*] role requerente
+	agencia[1..*] role reservador
 attributes
 	dataHora_reserva : dataHora
 	dataHora_devolucao : dataHora
@@ -137,7 +137,7 @@ operations
 	criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : dataHora, data2 : dataHora) : reserva
 	pre capacidade: a.reserva->size() <= a.carro->size()
 	pre clienteLimpo: not(c.registro.listaNegra())
-	pre dataSobreposta: reserva.allInstances()->select(r : reserva | (r.dataHora_reserva.toDay() > data1.toDay() and r.dataHora_reserva.toDay() < data2.toDay()) or (r.dataHora_devolucao.toDay() > data1.toDay() and r.dataHora_devolucao.toDay() < data2.toDay()) and (data1.toDay() > r.dataHora_reserva.toDay() and data1.toDay() < r.dataHora_devolucao.toDay()) or (data2.toDay() > r.dataHora_reserva.toDay() and data2.toDay() < r.dataHora_devolucao.toDay()))->isEmpty()
+	pre dataSobreposta: c.reserva->select(r : reserva | (r.dataHora_reserva.toDay() > data1.toDay() and r.dataHora_reserva.toDay() < data2.toDay()) or (r.dataHora_devolucao.toDay() > data1.toDay() and r.dataHora_devolucao.toDay() < data2.toDay()) and (data1.toDay() > r.dataHora_reserva.toDay() and data1.toDay() < r.dataHora_devolucao.toDay()) or (data2.toDay() > r.dataHora_reserva.toDay() and data2.toDay() < r.dataHora_devolucao.toDay()))->isEmpty()
 	post valores: requerente = c and reservador = a and g = grupo_carro and dataHora_reserva = data1 and dataHora_devolucao = data2
 	post valorPadrao: g.isUndefined() and g = grupo_carro.grupo('A')
 
@@ -163,7 +163,7 @@ attributes
 operations
 
 	imediato(data1 : dataHora , data2 : dataHora, grupo: grupo_carro , a : agencia) : reserva
-		pre diaDevolucao: data2.toDay() < carro.manutencao.data.toDay() and data2.toDay() < motorista.reserva.dataHora_reserva.toDay()
+		pre diaDevolucao: data2.toDay() < carro.manutencao.data.toDay() and data2.toDay() < motorista.reserva->asSequence()->first().dataHora_reserva.toDay()
 		post menorKm: carro = a.carro->select(c | a.carro->select(d | d <> c and d.quilometragem < c.quilometragem)->isEmpty())->asSequence()->first()
 
 	entregaCarro(c : cliente , s : Set(cliente) , data1 : dataHora , data2 : dataHora) : locacao
