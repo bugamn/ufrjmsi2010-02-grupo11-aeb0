@@ -7,6 +7,11 @@ model VoceAluga
 
 --Classes
 
+class opcao
+attributes
+	grupo : grupo_carro
+end
+
 class agencia
 attributes
   localizacao : String
@@ -69,9 +74,9 @@ attributes
 	condicao : String
 	apto : Boolean
 constraints
-	inv HabilitacaoValida: self.carteira.validade.toMinute() > self.locacao.dataHora_devolucao.toMinute()
+	inv HabilitacaoValida: self.carteira.validade.toMinute() > self.locacao.dataHora_devolucao.toMinute() or self.locacao->isEmpty()
 	inv SeguroCompativel: self.pais.regra->includesAll(self.seguro.regra)
-	inv CarroAmbiental: self.pais->collect(regra)->includesAll(self.carro.regra)
+	inv CarroAmbiental: self.pais->collect(regra)->includesAll(self.carro.regra) or self.carro->isEmpty()
 end
 
 class regra
@@ -204,7 +209,7 @@ class CC
 attributes
 	possuidor : String
 	disponibilidade: Real
-	numero : Integer
+	numero : String
 	validade : dataHora
 	emissao : dataHora
 operations
@@ -316,7 +321,7 @@ association possui between
 end
 
 association contem between
-  registro[1]
+  registro[0..1]
   cliente[1]
 end
 
