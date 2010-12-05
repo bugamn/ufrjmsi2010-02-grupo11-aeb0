@@ -137,7 +137,7 @@ operations
 	criarReserva(c : cliente, a : agencia, g : grupo_carro, data1 : dataHora, data2 : dataHora) : reserva
 	pre capacidade: a.reserva->size() <= a.carro->size()
 	pre clienteLimpo: not(c.registro.listaNegra())
-	pre dataSobreposta: c.reserva->select(r : reserva | (r.dataHora_reserva.toDay() > data1.toDay() and r.dataHora_reserva.toDay() < data2.toDay()) or (r.dataHora_devolucao.toDay() > data1.toDay() and r.dataHora_devolucao.toDay() < data2.toDay()) and (data1.toDay() > r.dataHora_reserva.toDay() and data1.toDay() < r.dataHora_devolucao.toDay()) or (data2.toDay() > r.dataHora_reserva.toDay() and data2.toDay() < r.dataHora_devolucao.toDay()))->isEmpty()
+	pre dataSobreposta: c.reserva->select(r : reserva | (r.dataHora_reserva.toDay() >= data1.toDay() and r.dataHora_reserva.toDay() <= data2.toDay()) or (r.dataHora_devolucao.toDay() >= data1.toDay() and r.dataHora_devolucao.toDay() <= data2.toDay()) and (data1.toDay() >= r.dataHora_reserva.toDay() and data1.toDay() <= r.dataHora_devolucao.toDay()) or (data2.toDay() >= r.dataHora_reserva.toDay() and data2.toDay() <= r.dataHora_devolucao.toDay()))->isEmpty()
 	post valores: requerente = c and reservador = a and g = grupo_carro and dataHora_reserva = data1 and dataHora_devolucao = data2
 	post valorPadrao: g.isUndefined() and g = grupo_carro.grupo('A')
 
