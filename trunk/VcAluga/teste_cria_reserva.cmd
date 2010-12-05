@@ -6,11 +6,53 @@
 
 --Grupo de carro Categoria A
 !create a :grupo_carro
-!set	a.categoria := 'A'
+!set a.categoria := 'A'
+
+--modelo
+!create t1 :modelo 
+!set t1.marca := 'T1'
+!insert (a, t1) into grupo_modelo
+
+--carros
+!create car1 :carro
+!set car1.placa := 'AAA0000'
+!set car1.ano := '1984'
+!insert (t1, car1) into modelo_carro
+
+!create car2 :carro
+!set car2.placa := 'AAA0001'
+!set car2.ano := '1984'
+!insert (t1, car2) into modelo_carro
+
+!create car3 :carro
+!set car3.placa := 'AAA0002'
+!set car3.ano := '1984'
+!insert (t1, car3) into modelo_carro
+
+!create car4 :carro
+!set car4.placa := 'AAA0003'
+!set car4.ano := '1984'
+!insert (t1, car4) into modelo_carro
+
+!create car5 :carro
+!set car5.placa := 'AAA0004'
+!set car5.ano := '1984'
+!insert (t1, car5) into modelo_carro
+
+!create car6 :carro
+!set car6.placa := 'AAA0005'
+!set car6.ano := '1984'
+!insert (t1, car6) into modelo_carro
+
+!create car7 :carro
+!set car7.placa := 'AAA0006'
+!set car7.ano := '1984'
+!insert (t1, car7) into modelo_carro
 
 --Agencia
 !create jujuba :agencia
 !set	jujuba.localizacao := 'Jujubalandia'
+!insert (jujuba, car1) into possui
 
 --Pais
 !create br :pais
@@ -88,6 +130,7 @@
 ? ze_sa_p.registro->notEmpty()
 ? not(ze_sa_p.registro.listaNegra())
 ? not(op_p.grupo.isUndefined())
+? jujuba.reserva->size() < jujuba.carro->size()
 --a criacao da reserva
 !create reservaZe_p : reserva between (ze_sa_p, jujuba)
 !set	reservaZe_p.dataHora_reserva := dReservaZe_p
